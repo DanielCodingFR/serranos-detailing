@@ -1,335 +1,79 @@
-	<!DOCTYPE html>
-	<html lang="en">
-	<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Phi-Games 2026 | Phi Delta Theta</title>
-
-	<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
-	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-	<script src="https://js.stripe.com/v3/"></script>
-
-	<style>
-	:root {
-	  --gold: #c9a227;
-	  --gold-glow: rgba(201, 162, 39, 0.3);
-	  --navy: #0c1f33;
-	  --navy-light: #142d4c;
-	  --glass: rgba(20, 45, 76, 0.8);
-	}
-
-	body {
-	  margin: 0;
-	  background: radial-gradient(circle at top, #162e4a 0%, #0c1f33 100%);
-	  color: #f4f0e6;
-	  font-family: 'Libre Baskerville', serif;
-	  overflow-x: hidden;
-	}
-
-	header {
-	  text-align: center;
-	  padding: 30px 20px 10px;
-	}
-
-	header img {
-	  width: 80px;
-	  filter: drop-shadow(0 0 10px var(--gold-glow));
-	  margin-bottom: 10px;
-	}
-
-	h1 {
-	  font-family: 'Cinzel', serif;
-	  font-size: 42px;
-	  margin: 0;
-	  letter-spacing: 4px;
-	  color: var(--gold);
-	  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-	}
-
-	.tagline {
-	  font-size: 14px;
-	  letter-spacing: 2px;
-	  text-transform: uppercase;
-	  opacity: 0.8;
-	  margin-top: 5px;
-	}
-
-	/* Main Layout Grid */
-	.container {
-	  display: grid;
-	  grid-template-columns: 1fr 1fr;
-	  gap: 20px;
-	  width: 95%;
-	  max-width: 1400px;
-	  margin: 20px auto;
-	}
-
-	.card {
-	  background: var(--glass);
-	  backdrop-filter: blur(10px);
-	  padding: 20px;
-	  border-radius: 12px;
-	  border: 1px solid rgba(201, 162, 39, 0.2);
-	  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-	}
-
-	h2 {
-	  font-family: 'Cinzel', serif;
-	  font-size: 20px;
-	  color: var(--gold);
-	  margin-top: 0;
-	  border-bottom: 1px solid var(--gold-glow);
-	  padding-bottom: 10px;
-	}
-
-	/* Condensed Form */
-	.registration-controls {
-	  display: flex;
-	  gap: 10px;
-	  flex-wrap: wrap;
-	  align-items: center;
-	}
-
-	input, select {
-	  padding: 12px;
-	  background: #081627;
-	  border: 1px solid #1e3a5f;
-	  border-radius: 6px;
-	  color: white;
-	  flex: 1;
-	  min-width: 150px;
-	}
-
-	button.primary-btn {
-	  padding: 12px 24px;
-	  background: linear-gradient(135deg, #c9a227 0%, #a6851e 100%);
-	  color: #0c1f33;
-	  border: none;
-	  border-radius: 6px;
-	  font-weight: 800;
-	  font-family: 'Cinzel', serif;
-	  cursor: pointer;
-	  transition: all 0.3s ease;
-	  box-shadow: 0 4px 15px var(--gold-glow);
-	}
-
-	button.primary-btn:hover {
-	  transform: translateY(-2px);
-	  box-shadow: 0 6px 20px var(--gold);
-	}
-
-	/* Progress Bar */
-	.progress-container {
-	  margin-top: 15px;
-	}
-
-	.progress-wrap {
-	  background: #081627;
-	  border-radius: 20px;
-	  height: 15px;
-	  border: 1px solid #1e3a5f;
-	  overflow: hidden;
-	}
-
-	.progress-bar {
-	  height: 100%;
-	  width: 0%;
-	  background: var(--gold);
-	  box-shadow: 0 0 15px var(--gold);
-	  transition: width 1s cubic-bezier(0.17, 0.67, 0.83, 0.67);
-	}
-
-	/* Bracket Layout */
-	.bracket-container {
-	  grid-column: span 2;
-	  position: relative;
-	  min-height: 400px;
-	}
-
-	.bracket {
-	  display: flex;
-	  justify-content: space-around;
-	  margin-top: 20px;
-	}
-
-	.round {
-	  display: flex;
-	  flex-direction: column;
-	  justify-content: space-around;
-	  gap: 20px;
-	}
-
-	.match {
-	  background: rgba(255,255,255,0.03);
-	  border: 1px solid rgba(255,255,255,0.1);
-	  padding: 10px;
-	  border-radius: 8px;
-	  width: 200px;
-	  transition: border 0.3s;
-	}
-
-	.match:hover {
-	  border-color: var(--gold);
-	}
-
-	.team {
-	  padding: 8px;
-	  border-radius: 4px;
-	  font-size: 14px;
-	  font-weight: bold;
-	  cursor: default;
-	  background: rgba(0,0,0,0.2);
-	  margin: 4px 0;
-	  display: flex;
-	  justify-content: space-between;
-	}
-
-	.winner { color: var(--gold); }
-
-	/* SVG Connectors */
-	svg {
-	  position: absolute;
-	  top: 0; left: 0;
-	  width: 100%; height: 100%;
-	  z-index: -1;
-	  pointer-events: none;
-	}
-
-	line {
-	  stroke: var(--gold-glow);
-	  stroke-width: 1.5;
-	}
-
-	@media (max-width: 900px) {
-	  .container { grid-template-columns: 1fr; }
-	  .bracket-container { grid-column: span 1; }
-	}
-	</style>
-	</head>
-
-	<body>
-
-	<header>
-	  <img src="https://upload.wikimedia.org/wikipedia/en/thumb/0/0b/Phi_Delta_Theta_Crest.png/250px-Phi_Delta_Theta_Crest.png" alt="Crest">
-	  <h1>PHI-GAMES 2026</h1>
-	  <div class="tagline">Phi Delta Theta Philanthropy Tournament</div>
-	</header>
-
-	<div class="container">
-	  <div class="card">
-		<h2>Secure Your Legacy</h2>
-		<div class="registration-controls">
-		  <input type="text" id="teamName" placeholder="Team Name">
-		  <select id="teamSize">
-			<option value="1">1 Player</option>
-			<option value="2">2 Players</option>
-			<option value="3">3 Players</option>
-			<option value="4">4 Players</option>
-			<option value="5">5 Players</option>
-		  </select>
-		  <button class="primary-btn" onclick="handleRegistration()">Pay $10 & Join</button>
-		</div>
-	  </div>
-
-	  <div class="card">
-		<h2>Campaign Progress</h2>
-		<div style="font-size: 24px; font-weight: bold; margin-bottom: 5px;">
-		  $<span id="totalRaised">0</span> <span style="font-size: 14px; opacity: 0.6;">raised for Iron Phi</span>
-		</div>
-		<div class="progress-container">
-		  <div class="progress-wrap">
-			<div class="progress-bar" id="progressBar"></div>
-		  </div>
-		</div>
-	  </div>
-
-	  <div class="card bracket-container">
-		<h2 style="text-align: center;">Tournament Field</h2>
-		<div class="bracket">
-		  <div class="round" id="quarters"></div>
-		  <div class="round" id="semis"></div>
-		  <div class="round" id="final"></div>
-		</div>
-		<svg id="lines"></svg>
-	  </div>
-	</div>
-
-	<script>
-	// CONFIGURATION
-	const S_URL = 'https://dlrjujkapopwovjqlpew.supabase.co';
-	const S_KEY = 'sb_publishable_sABzmRtrGXfuU1gYSxp_TQ_EADV6vwU';
-	const stripe = Stripe('pk_test_51MqMutA7r0X1rU1yzyOomzUMtCHeDHsS0fL8piKSj8QEVHsHRXofKz02HnBmA0RNyRKfNif0KEIezm8lai8RwhE300mNXt9o4Z');
-	const supabaseClient = supabase.createClient(S_URL, S_KEY);
-
-	// LOGIC
-	async function handleRegistration() {
-		const teamName = document.getElementById("teamName").value;
-		const teamSize = document.getElementById("teamSize").value;
-		if (!teamName) return alert("Please enter your team name.");
-
-		// This calls the Edge Function you deployed (resister-team-stripe)
-		const { data, error } = await supabaseClient.functions.invoke('resister-team-stripe', {
-			body: { teamName, teamSize }
-		});
-
-		if (error) {
-			console.error(error);
-			alert("System error. Check console.");
-			return;
-		}
-		window.location.href = data.url;
-	}
-
-	async function loadTournament() {
-		const { data: teams } = await supabaseClient
-			.from('teams')
-			.select('*')
-			.eq('paid', true)
-			.order('created_at', { ascending: true });
-
-		renderBracket(teams);
-		updateProgressBar(teams ? teams.length : 0);
-	}
-
-	function renderBracket(teams = []) {
-		const quarters = document.getElementById('quarters');
-		quarters.innerHTML = '';
-		
-		if (!teams || teams.length === 0) {
-			quarters.innerHTML = '<p style="opacity:0.5; padding:10px;">Waiting for first registration...</p>';
-			return;
-		}
-		
-		// Generate 4 matches for Quarters (8 slots)
-		for (let i = 0; i < 4; i++) {
-			const teamA = teams[i*2] ? teams[i*2].team_name : "TBD";
-			const teamB = teams[i*2+1] ? teams[i*2+1].team_name : "TBD";
-			
-			quarters.innerHTML += `
-				<div class="match">
-					<div class="team">${teamA}</div>
-					<div style="font-size:9px; opacity:0.4; text-align:center; margin: 2px 0;">ESTABLISHED 1848</div>
-					<div class="team">${teamB}</div>
-				</div>
-			`;
-		}
-		// Logic for Semis and Finals would be added here or controlled by Admin
-	}
-
-	function updateProgressBar(count) {
-		const goal = 16; 
-		const percent = Math.min((count / goal) * 100, 100);
-		document.getElementById('progressBar').style.width = percent + "%";
-		document.getElementById('totalRaised').innerText = count * 10;
-	}
-
-	// Subscriptions
-	loadTournament();
-	supabaseClient.channel('custom-all-channel')
-		.on('postgres_changes', { event: '*', schema: 'public', table: 'teams' }, () => {
-			loadTournament();
-		}).subscribe();
-	</script>
-
-	</body>
-	</html>
+<!doctype html>
+<html lang=en>
+<head>
+<meta charset=UTF-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>Serrano's Mobile Detailing LLC | Dallas-Fort Worth</title>
+<script src=https://cdn.tailwindcss.com></script>
+<link href=https://unpkg.com/aos@2.3.1/dist/aos.css rel=stylesheet>
+<script src=https://unpkg.com/aos@2.3.1/dist/aos.js></script>
+<style>.orange-glow{box-shadow:0 0 20px rgba(249,115,22,.3)}.bg-carbon{background-color:#0a0a0a}.glass{background:rgba(0,0,0,.7);backdrop-filter:blur(12px)}</style>
+</head>
+<body class="bg-carbon text-white font-sans overflow-x-hidden">
+<header class="relative h-screen flex items-center justify-center overflow-hidden">
+<div class="absolute inset-0 bg-black opacity-60 z-10"></div>
+<div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1607860108855-64acf2078ed9?auto=format&fit=crop&q=80')] bg-cover bg-center"></div>
+<div class="relative z-20 text-center px-4" data-aos=fade-up data-aos-duration=1500>
+<h1 class="text-5xl md:text-7xl font-black tracking-tighter uppercase">
+Serrano's <span class=text-orange-500>Mobile</span>
+</h1>
+<p class="mt-4 text-xl md:text-2xl font-light tracking-widest text-gray-300">DALLAS • FORT WORTH • RICHARDSON</p>
+<div class="mt-8 flex flex-col md:flex-row gap-4 justify-center">
+<a href=tel:4692748267 class="bg-orange-600 hover:bg-orange-500 text-white px-10 py-4 rounded-full font-bold text-lg transition orange-glow transform hover:scale-105">BOOK A DETAIL</a>
+<a href=#youtube class="border border-white hover:bg-white hover:text-black px-10 py-4 rounded-full font-bold text-lg transition transform hover:scale-105">WATCH TRANSFORMATIONS</a>
+</div>
+</div>
+</header>
+<section class="py-24 bg-black px-6 border-y border-white/5">
+<div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-12 text-center">
+<div data-aos=fade-up data-aos-delay=100>
+<h3 class="text-5xl font-black text-orange-500">5.0</h3>
+<p class="text-gray-500 uppercase tracking-widest text-sm mt-2">Google Stars</p>
+</div>
+<div data-aos=fade-up data-aos-delay=200>
+<h3 class="text-5xl font-black text-orange-500">15K+</h3>
+<p class="text-gray-500 uppercase tracking-widest text-sm mt-2">YouTube Subs</p>
+</div>
+<div data-aos=fade-up data-aos-delay=300>
+<h3 class="text-5xl font-black text-orange-500">23+</h3>
+<p class="text-gray-500 uppercase tracking-widest text-sm mt-2">Years Experience</p>
+</div>
+</div>
+</section>
+<section id=youtube class="py-24 bg-zinc-900 px-6">
+<div class="max-w-4xl mx-auto text-center">
+<h2 class="text-4xl font-black mb-8 tracking-tight" data-aos=fade-down>AS SEEN ON YOUTUBE</h2>
+<div class="aspect-video bg-black rounded-3xl overflow-hidden border border-orange-500/20 shadow-2xl" data-aos=zoom-in data-aos-duration=1000>
+<iframe class="w-full h-full" src="https://www.youtube.com/embed/uP4KvzlB_Iw?rel=0&modestbranding=1" frameborder=0 allowfullscreen></iframe>
+</div>
+<p class="mt-8 text-gray-400 text-lg leading-relaxed max-w-2xl mx-auto" data-aos=fade-up>
+Join 15,000+ viewers as we dive into the life of a professional detailer. <br>
+<span class="text-white font-semibold italic">Transparency, quality, and God's blessings in every job.</span>
+</p>
+</div>
+</section>
+<section class="py-24 bg-black px-6">
+<div class="max-w-6xl mx-auto">
+<h2 class="text-4xl font-black mb-16 text-center tracking-tight" data-aos=fade-up>PREMIUM SERVICES</h2>
+<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+<div class="p-10 bg-zinc-900/50 border border-zinc-800 rounded-3xl hover:border-orange-500 transition-all duration-500 group" data-aos=fade-right data-aos-delay=100>
+<h4 class="text-2xl font-bold mb-4 group-hover:text-orange-500 transition">Interior Restoration</h4>
+<p class="text-gray-400 leading-relaxed">Deep steam cleaning, extraction, and leather conditioning. Making interiors look factory-fresh.</p>
+</div>
+<div class="p-10 bg-zinc-900/50 border border-zinc-800 rounded-3xl hover:border-orange-500 transition-all duration-500 group" data-aos=fade-up data-aos-delay=200>
+<h4 class="text-2xl font-bold mb-4 group-hover:text-orange-500 transition">Paint Correction</h4>
+<p class="text-gray-400 leading-relaxed">Removing swirls and scratches to restore that mirror-like reflection your car deserves.</p>
+</div>
+<div class="p-10 bg-zinc-900/50 border border-zinc-800 rounded-3xl hover:border-orange-500 transition-all duration-500 group" data-aos=fade-left data-aos-delay=300>
+<h4 class="text-2xl font-bold mb-4 group-hover:text-orange-500 transition">Ceramic Coatings</h4>
+<p class="text-gray-400 leading-relaxed">Professional-grade protection that lasts years. High-gloss, hydrophobic, and permanent.</p>
+</div>
+</div>
+</div>
+</section>
+<footer class="py-16 border-t border-white/5 text-center text-gray-600 bg-black">
+<p class="uppercase tracking-widest text-xs">© 2026 Serrano's Mobile Detailing LLC.</p>
+</footer>
+<script>AOS.init({duration:800,once:!0,offset:100})</script>
+</body>
+</html>
